@@ -7,6 +7,7 @@ use GDO\Net\HTTP;
 use GDO\DB\GDT_UInt;
 use GDO\Util\Random;
 use GDO\Core\Logger;
+use GDO\DB\Database;
 
 /**
  * Simple api for random.org
@@ -47,15 +48,29 @@ final class Module_RandomOrg extends GDO_Module
     
     public function rand($min, $max)
     {
-        if (!$this->hasMoreRandomNumbers($min, $max))
+        $db = Database::instance();
+        $lock = 'RANDOM_ORG';
+        try
         {
-            if (!$this->requestMoreRandomNumbers($min, $max))
+            $db->lock($lock);
+            if (!$this->hasMoreRandomNumbers($min, $max))
             {
-                Logger::logError("Cannot request random values!");
-                return Random::rand($min, $max);
+                if (!$this->requestMoreRandomNumbers($min, $max))
+                {
+                    Logger::logError("Cannot request random values!");
+                }
             }
+            return $this->_rand($min, $max);
         }
-        return $this->_rand($min, $max);
+        catch (\Throwable $ex)
+        {
+            Logger::logException($ex);
+        }
+        finally
+        {
+            $db->unlock($lock);
+        }
+        return Random::rand($min, $max);
     }
     
     private function _rand($min, $max)
