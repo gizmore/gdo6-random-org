@@ -8,10 +8,10 @@ use GDO\DB\GDT_UInt;
 use GDO\Util\Random;
 use GDO\Core\Logger;
 use GDO\DB\Database;
+use GDO\Core\GDOError;
 
 /**
  * Simple api for random.org
- * Falls back to gdo6 random generator via openssl.
  * Requests chunks of random numbers and saves them with pack() to a temp file.
  * 
  * @example $number = Module_RandomOrg::instance()->rand(1, 10);
@@ -70,7 +70,8 @@ final class Module_RandomOrg extends GDO_Module
         {
             $db->unlock($lock);
         }
-        return Random::rand($min, $max);
+        throw new GDOError('err_random_org_exhausted');
+//         return Random::rand($min, $max);
     }
     
     private function _rand($min, $max)
