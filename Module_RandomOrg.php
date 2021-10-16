@@ -5,7 +5,6 @@ use GDO\Core\GDO_Module;
 use GDO\Core\GDT_Secret;
 use GDO\Net\HTTP;
 use GDO\DB\GDT_UInt;
-use GDO\Util\Random;
 use GDO\Core\Logger;
 use GDO\DB\Database;
 use GDO\Core\GDOError;
@@ -22,6 +21,11 @@ use GDO\Core\GDOError;
  */
 final class Module_RandomOrg extends GDO_Module
 {
+    public function onLoadLanguage()
+    {
+        return $this->loadLanguage('lang/randomorg');
+    }
+    
     public function getConfig()
     {
         return [
