@@ -116,6 +116,9 @@ final class Module_RandomOrg extends GDO_Module
         {
             return $this->writeMoreRandomNumbers($min, $max, $data);
         }
+        
+        Logger::logError(print_r($json));
+        
         return false;
     }
 
