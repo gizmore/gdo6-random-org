@@ -4,10 +4,12 @@ namespace GDO\RandomOrg;
 use GDO\Core\GDO_Module;
 use GDO\Core\GDT_Secret;
 use GDO\Net\HTTP;
+use GDO\Util\Random;
 use GDO\DB\GDT_UInt;
 use GDO\Core\Logger;
 use GDO\DB\Database;
 use GDO\Core\GDOError;
+use GDO\DB\GDT_Checkbox;
 
 /**
  * Simple api for random.org
@@ -16,7 +18,7 @@ use GDO\Core\GDOError;
  * @example $number = Module_RandomOrg::instance()->rand(1, 10);
  * 
  * @author gizmore
- * @version 6.10.5
+ * @version 6.11.1
  * @since 6.10.5
  */
 final class Module_RandomOrg extends GDO_Module
@@ -29,6 +31,7 @@ final class Module_RandomOrg extends GDO_Module
     public function getConfig()
     {
         return [
+        	GDT_Checkbox::make('random_org_fallback')->initial('0'),
             GDT_Secret::make('random_org_key')->initial('65b5e4c9-74bc-44c2-a9f2-b32418572f47'),
             GDT_UInt::make('random_org_chunk_size')->initial('1000'),
             GDT_UInt::make('random_org_request_id')->initial('1'),
@@ -48,6 +51,11 @@ final class Module_RandomOrg extends GDO_Module
     public function cfgChunkSize()
     {
         return $this->getConfigVar('random_org_chunk_size');
+    }
+    
+    public function cfgFallback()
+    {
+    	return $this->getConfigVar('random_org_fallback');
     }
     
     public function rand($min, $max)
@@ -74,8 +82,13 @@ final class Module_RandomOrg extends GDO_Module
         {
             $db->unlock($lock);
         }
+        
+        if ($this->cfgFallback())
+        {
+	        return Random::rand($min, $max);
+        }
+        
         throw new GDOError('err_random_org_exhausted');
-//         return Random::rand($min, $max);
     }
     
     private function _rand($min, $max)
